@@ -7,7 +7,7 @@ topic = "TERIMA_DATA"
 
 # 1. MQTT hanya dibuat sekali
 if "client" not in st.session_state:
-    client = mqtt.Client("STREAM_LAMP1", callback_api_version=mqtt.CallbackAPIVersion.VERSION1)
+    client = mqtt.Client("STREAM_LAMP1")   # ← versi aman
     client.connect(broker, port, 60)
     client.loop_start()
     st.session_state.client = client
