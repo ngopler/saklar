@@ -1,36 +1,40 @@
 import streamlit as st
 import paho.mqtt.client as mqtt
-import time
 
-st.title("Kontrol Lampu 1")
+# Konfigurasi MQTT
+broker = "broker.mqtt-dashboard.com"
+port = 1883
+topic = "TERIMA_DATA"
 
-# Inisialisasi MQTT client global
-if "mqtt_client" not in st.session_state:
-    client = mqtt.Client(client_id="STREAMLIT_LAMP1")
-    client.connect("broker.mqtt-dashboard.com", 1883, 60)
-    client.loop_start()
-    st.session_state.mqtt_client = client
-    st.session_state.mqtt_connected = True
-else:
-    client = st.session_state.mqtt_client
+# Buat client MQTT
+client = mqtt.Client(
+    client_id="STREAMLIT_CONTROLLER",
+    callback_api_version=mqtt.CallbackAPIVersion.VERSION1
+)
+client.connect(broker, port, 60)
+client.loop_start()
 
-# Status lampu
-if "lampu1" not in st.session_state:
-    st.session_state.lampu1 = False
+st.title("Kontrol Lampu IoT via MQTT")
+st.write("Gunakan tombol di bawah untuk menghidupkan/mematikan lampu.")
 
-# Checkbox toggle
-lampu1 = st.checkbox("Lampu 1", value=st.session_state.lampu1)
+# Tombol Lampu 1
+col1, col2 = st.columns(2)
+with col1:
+    if st.button("Lampu 1 ON"):
+        client.publish(topic, "1")
+        st.success("Lampu 1 ON")
+with col2:
+    if st.button("Lampu 1 OFF"):
+        client.publish(topic, "2")
+        st.warning("Lampu 1 OFF")
 
-# Jika status berubah, kirim MQTT
-if lampu1 != st.session_state.lampu1:
-    st.session_state.lampu1 = lampu1
-    # Tunggu sebentar supaya MQTT client benar-benar ready
-    time.sleep(0.2)
-    if lampu1:
-        client.publish("TERIMA_DATA", "1")
-        st.success("Lampu 1 → ON")
-    else:
-        client.publish("TERIMA_DATA", "2")
-        st.warning("Lampu 1 → OFF")
-
-st.write(f"Status Lampu 1: **{'ON' if st.session_state.lampu1 else 'OFF'}**")
+# Tombol Lampu 2
+col3, col4 = st.columns(2)
+with col3:
+    if st.button("Lampu 2 ON"):
+        client.publish(topic, "3")
+        st.success("Lampu 2 ON")
+with col4:
+    if st.button("Lampu 2 OFF"):
+        client.publish(topic, "4")
+        st.warning("Lampu 2 OFF")
