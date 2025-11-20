@@ -15,7 +15,6 @@ client.connect(broker, port, 60)
 client.loop_start()
 
 st.title("Kontrol Lampu IoT via MQTT")
-
 st.write("Gunakan tombol di bawah untuk menghidupkan/mematikan lampu.")
 
 # Tombol Lampu 1
@@ -39,6 +38,3 @@ with col4:
     if st.button("Lampu 2 OFF"):
         client.publish(topic, "4")
         st.warning("Lampu 2 OFF")
-
-# Stop MQTT ketika app ditutup
-st.experimental_singleton.clear()
