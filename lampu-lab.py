@@ -1,14 +1,18 @@
 import streamlit as st
 import paho.mqtt.client as mqtt
+import threading
 
-# MQTT client dibuat sekali di awal (global)
+# Fungsi loop MQTT di background
+def mqtt_loop(client):
+    client.loop_forever()
+
+# MQTT client global
 if "mqtt_client" not in st.session_state:
-    client = mqtt.Client(
-        client_id="STREAMLIT_LAMP1",
-        callback_api_version=mqtt.CallbackAPIVersion.VERSION1
-    )
+    client = mqtt.Client(client_id="STREAMLIT_LAMP1")
     client.connect("broker.mqtt-dashboard.com", 1883, 60)
-    client.loop_start()
+    # Jalankan loop di thread terpisah
+    thread = threading.Thread(target=mqtt_loop, args=(client,), daemon=True)
+    thread.start()
     st.session_state.mqtt_client = client
 
 client = st.session_state.mqtt_client
@@ -19,15 +23,15 @@ st.title("Kontrol Lampu 1")
 if "lampu1" not in st.session_state:
     st.session_state.lampu1 = False  # OFF awal
 
-def toggle_lampu1():
-    st.session_state.lampu1 = not st.session_state.lampu1
-    if st.session_state.lampu1:
-        client.publish("TERIMA_DATA", "1")  # ON
-    else:
-        client.publish("TERIMA_DATA", "2")  # OFF
+# Checkbox toggle
+lampu1 = st.checkbox("Lampu 1", value=st.session_state.lampu1)
 
-# Tombol toggle
-if st.button("Toggle Lampu 1"):
-    toggle_lampu1()
+# Jika status berubah, kirim MQTT
+if lampu1 != st.session_state.lampu1:
+    st.session_state.lampu1 = lampu1
+    if lampu1:
+        client.publish("TERIMA_DATA", "1")
+    else:
+        client.publish("TERIMA_DATA", "2")
 
 st.write(f"Status Lampu 1: **{'ON' if st.session_state.lampu1 else 'OFF'}**")
