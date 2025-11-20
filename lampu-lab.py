@@ -2,7 +2,7 @@ import streamlit as st
 import paho.mqtt.client as mqtt
 
 # MQTT client hanya dibuat sekali
-@st.experimental_singleton
+@st.singleton
 def get_mqtt_client():
     client = mqtt.Client(
         client_id="STREAMLIT_LAMP1",
