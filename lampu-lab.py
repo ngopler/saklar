@@ -1,18 +1,17 @@
 import streamlit as st
 import paho.mqtt.client as mqtt
 
-# MQTT client hanya dibuat sekali
-@st.singleton
-def get_mqtt_client():
+# MQTT client dibuat sekali di awal (global)
+if "mqtt_client" not in st.session_state:
     client = mqtt.Client(
         client_id="STREAMLIT_LAMP1",
         callback_api_version=mqtt.CallbackAPIVersion.VERSION1
     )
     client.connect("broker.mqtt-dashboard.com", 1883, 60)
     client.loop_start()
-    return client
+    st.session_state.mqtt_client = client
 
-client = get_mqtt_client()
+client = st.session_state.mqtt_client
 
 st.title("Kontrol Lampu 1")
 
