@@ -1,37 +1,32 @@
 import streamlit as st
 import paho.mqtt.client as mqtt
 
-# MQTT setup
 broker = "broker.mqtt-dashboard.com"
 port = 1883
 topic = "TERIMA_DATA"
 
-client = mqtt.Client(
-    client_id="STREAMLIT_LAMP1",
-    callback_api_version=mqtt.CallbackAPIVersion.VERSION1
-)
-client.connect(broker, port, 60)
-client.loop_start()
+# 1. MQTT hanya dibuat sekali
+if "client" not in st.session_state:
+    client = mqtt.Client("STREAM_LAMP1", callback_api_version=mqtt.CallbackAPIVersion.VERSION1)
+    client.connect(broker, port, 60)
+    client.loop_start()
+    st.session_state.client = client
+
+client = st.session_state.client
 
 st.title("Kontrol Lampu 1")
 
-# Inisialisasi status lampu di session_state
-if "lampu1" not in st.session_state:
-    st.session_state.lampu1 = False  # False = OFF, True = ON
+# 2. Tombol ON / OFF
+col1, col2 = st.columns(2)
 
-def toggle_lampu1():
-    # Toggle status
-    st.session_state.lampu1 = not st.session_state.lampu1
-    # Kirim MQTT
-    if st.session_state.lampu1:
-        client.publish(topic, "1")  # Lampu 1 ON
-    else:
-        client.publish(topic, "2")  # Lampu 1 OFF
+if col1.button("Lampu 1 ON"):
+    client.publish(topic, "1")
+    st.session_state.lampu1 = True
 
-# Tombol toggle
-if st.button("Toggle Lampu 1"):
-    toggle_lampu1()
+if col2.button("Lampu 1 OFF"):
+    client.publish(topic, "2")
+    st.session_state.lampu1 = False
 
-# Tampilkan status
-status = "ON" if st.session_state.lampu1 else "OFF"
-st.write(f"Status Lampu 1: **{status}**")
+# 3. Tampilkan status
+status = st.session_state.get("lampu1", False)
+st.write("Status:", "🟢 ON" if status else "🔴 OFF")
